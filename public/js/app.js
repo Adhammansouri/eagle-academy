@@ -1,12 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
   // 1. Initialize Chart.js configuration globally
-  Chart.defaults.color = "#9ea4a8";
-  Chart.defaults.font.family = "'Cairo', sans-serif";
+  if (typeof Chart !== 'undefined') {
+    Chart.defaults.color = "#9ea4a8";
+    Chart.defaults.font.family = "'Cairo', sans-serif";
+  }
 
   // 2. Setup Category Chart (Doughnut) - براعم vs شباب
   const categoryCanvas = document.getElementById("categoryChart");
   let categoryChart;
-  if(categoryCanvas) {
+  if(categoryCanvas && typeof Chart !== 'undefined') {
     const categoryCtx = categoryCanvas.getContext("2d");
     categoryChart = new Chart(categoryCtx, {
       type: "doughnut",
@@ -53,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3. Setup Source Chart (Bar) - الأكاديمية vs فورس جيم
   const sourceCanvas = document.getElementById("sourceChart");
   let sourceChart;
-  if(sourceCanvas) {
+  if(sourceCanvas && typeof Chart !== 'undefined') {
     const sourceCtx = sourceCanvas.getContext("2d");
     sourceChart = new Chart(sourceCtx, {
       type: "bar",
@@ -163,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify({
                 name: playerName,
                 birth_year: birthDate,
+                phone_number: document.getElementById("phoneNumber").value,
                 fee: amount,
                 subscription_date: subDate,
                 expiration_date: expDate,

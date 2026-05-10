@@ -62,6 +62,11 @@
                         </div>
                         
                         <div class="form-group">
+                            <label for="phoneNumber">📱 رقم هاتف ولي الأمر</label>
+                            <input type="text" id="phoneNumber" placeholder="مثال: 01012345678">
+                        </div>
+                        
+                        <div class="form-group">
                             <label for="source">🏢 الجهة القادم منها</label>
                             <select id="source" required>
                                 <option value="" disabled selected>-- اختيار جهة الاشتراك --</option>
@@ -106,21 +111,12 @@
                         تأكيد وحفظ بيانات اللاعب ✔
                     </button>
                     
-                    <div id="loadingIndicator" style="display: none; text-align: center; margin-top: 15px; color: var(--primary-red); font-weight: bold;">
-                        جاري الحفظ... ⏳
-                    </div>
+
                 </form>
             </div>
         </div>
     </main>
 
     <script src="{{ asset('js/app.js') }}"></script>
-    <script>
-        // Adding simple visual feedback to the form submission
-        document.getElementById('subscriptionForm').addEventListener('submit', function() {
-            document.getElementById('submitBtn').style.opacity = '0.5';
-            document.getElementById('loadingIndicator').style.display = 'block';
-        });
-    </script>
 </body>
 </html>

@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Player;
+use App\Models\PlayerEvaluation;
+use App\Models\PlayerFight;
+use App\Models\PlayerWeight;
+use App\Models\PlayerTournament;
 use Illuminate\Http\Request;
 
 class PlayerController extends Controller
@@ -52,6 +56,8 @@ class PlayerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'player_code' => 'nullable|string|max:255|unique:players,player_code',
+            'phone_number' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
             'birth_year' => 'required|integer',
             'subscription_date' => 'required|date',
@@ -60,6 +66,14 @@ class PlayerController extends Controller
             'category' => 'nullable|string|in:براعم,شباب',
             'source' => 'required|in:الاكاديميه,فورس جيم',
         ]);
+
+        // Auto-generate player code if not provided
+        if (empty($validated['player_code'])) {
+            $latestPlayer = Player::latest('id')->first();
+            $nextId = $latestPlayer ? $latestPlayer->id + 1 : 1;
+            $validated['player_code'] = 'EA-' . (1000 + $nextId);
+        }
+
         $player = Player::create($validated);
 
         return response()->json([
@@ -72,5 +86,92 @@ class PlayerController extends Controller
     {
         $players = Player::orderBy('id', 'desc')->get();
         return view('players', compact('players'));
+    }
+
+    public function evaluate(Request $request, $id)
+    {
+        $player = Player::findOrFail($id);
+
+        $validated = $request->validate([
+            'evaluation_date' => 'required|date',
+            'tech_score' => 'nullable|integer|min:0|max:5',
+            'speed_score' => 'nullable|integer|min:0|max:5',
+            'defense_score' => 'nullable|integer|min:0|max:5',
+            'fitness_score' => 'nullable|integer|min:0|max:5',
+            'discipline_score' => 'nullable|integer|min:0|max:5',
+            'coach_notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Insert into player_evaluations
+        $player->evaluations()->create($validated);
+
+        // Also update the main player record with the latest evaluation for quick access/sorting if needed
+        $player->update($validated);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'تم حفظ التقييم بنجاح!']);
+        }
+
+        return redirect()->back()->with('success', 'تم حفظ التقييم بنجاح!');
+    }
+
+    public function profile($id)
+    {
+        $player = Player::with(['evaluations', 'fights', 'weights', 'tournaments'])->findOrFail($id);
+        return view('profile', compact('player'));
+    }
+
+    public function storeFight(Request $request, $id)
+    {
+        $player = Player::findOrFail($id);
+
+        $validated = $request->validate([
+            'fight_date' => 'required|date',
+            'opponent_name' => 'required|string|max:255',
+            'opponent_club' => 'nullable|string|max:255',
+            'result' => 'required|in:win,loss,draw',
+            'result_method' => 'nullable|in:points,ko,tko,rsc,walkover,dq',
+            'rounds' => 'nullable|integer|min:1|max:12',
+            'weight_class' => 'nullable|string|max:50',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $player->fights()->create($validated);
+
+        return response()->json(['success' => true, 'message' => 'تم إضافة النزال بنجاح!']);
+    }
+
+    public function storeWeight(Request $request, $id)
+    {
+        $player = Player::findOrFail($id);
+
+        $validated = $request->validate([
+            'recorded_date' => 'required|date',
+            'weight_kg' => 'required|numeric|min:10|max:200',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $player->weights()->create($validated);
+
+        return response()->json(['success' => true, 'message' => 'تم تسجيل الوزن بنجاح!']);
+    }
+
+    public function storeTournament(Request $request, $id)
+    {
+        $player = Player::findOrFail($id);
+
+        $validated = $request->validate([
+            'tournament_name' => 'required|string|max:255',
+            'tournament_date' => 'required|date',
+            'location' => 'nullable|string|max:255',
+            'medal' => 'required|in:gold,silver,bronze,participant',
+            'weight_class' => 'nullable|string|max:50',
+            'position' => 'nullable|integer|min:1',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $player->tournaments()->create($validated);
+
+        return response()->json(['success' => true, 'message' => 'تم إضافة البطولة بنجاح!']);
     }
 }
