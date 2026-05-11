@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Avoid rewriting if the request is already under /public (prevents public/public/...)
+    RewriteCond %{REQUEST_URI} !^/public/
+
+    # Route everything to Laravel's web root
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>
