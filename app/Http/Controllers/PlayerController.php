@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Player;
 use App\Models\PlayerEvaluation;
 use App\Models\PlayerFight;
+use App\Models\PlayerSubscriptionHistory;
 use App\Models\PlayerWeight;
 use App\Models\PlayerTournament;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PlayerController extends Controller
 {
@@ -74,7 +76,20 @@ class PlayerController extends Controller
             $validated['player_code'] = 'EA-' . (1000 + $nextId);
         }
 
-        $player = Player::create($validated);
+        $player = DB::transaction(function () use ($validated) {
+            $player = Player::create($validated);
+
+            $player->subscriptionHistories()->create([
+                'type' => PlayerSubscriptionHistory::TYPE_REGISTRATION,
+                'amount' => $validated['fee'],
+                'subscription_date' => $validated['subscription_date'],
+                'expiration_date' => $validated['expiration_date'],
+                'previous_subscription_date' => null,
+                'previous_expiration_date' => null,
+            ]);
+
+            return $player;
+        });
 
         return response()->json([
             'success' => true,
@@ -82,6 +97,83 @@ class PlayerController extends Controller
             'player' => $player
         ]);
     }
+    public function heroesWall(Request $request)
+    {
+        $skillLabels = [
+            ['key' => 'tech_score', 'name' => 'فني'],
+            ['key' => 'speed_score', 'name' => 'سرعة'],
+            ['key' => 'defense_score', 'name' => 'دفاع'],
+            ['key' => 'fitness_score', 'name' => 'لياقة'],
+            ['key' => 'discipline_score', 'name' => 'انضباط'],
+        ];
+
+        $avgExpression = '(COALESCE(tech_score,0) + COALESCE(speed_score,0) + COALESCE(defense_score,0) + COALESCE(fitness_score,0) + COALESCE(discipline_score,0)) / 5.0';
+
+        $categories = Player::whereNotNull('tech_score')
+            ->whereNotNull('category')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        $activeCategory = $request->get('category', 'all');
+
+        $query = Player::whereNotNull('tech_score')
+            ->selectRaw("*, {$avgExpression} as avg_score");
+
+        if ($activeCategory !== 'all' && $activeCategory !== null && $activeCategory !== '') {
+            $query->where('category', $activeCategory);
+        }
+
+        $players = $query->orderByDesc('avg_score')->get();
+
+        $evaluatedCount = $players->count();
+        $academyAvg = $evaluatedCount > 0 ? round((float) $players->avg('avg_score'), 1) : 0;
+        $topPlayer = $players->first();
+
+        $dimensionAverages = [
+            'labels' => array_column($skillLabels, 'name'),
+            'values' => $evaluatedCount > 0
+                ? [
+                    round((float) $players->avg('tech_score'), 1),
+                    round((float) $players->avg('speed_score'), 1),
+                    round((float) $players->avg('defense_score'), 1),
+                    round((float) $players->avg('fitness_score'), 1),
+                    round((float) $players->avg('discipline_score'), 1),
+                ]
+                : [0, 0, 0, 0, 0],
+        ];
+
+        $top3 = $players->take(3);
+        $podiumOrder = [];
+        if ($top3->count() >= 2) {
+            $podiumOrder[] = 1;
+        }
+        if ($top3->count() >= 1) {
+            $podiumOrder[] = 0;
+        }
+        if ($top3->count() >= 3) {
+            $podiumOrder[] = 2;
+        }
+
+        $medalEmojis = ['🥇', '🥈', '🥉'];
+        $medalClasses = ['hw-pod--1', 'hw-pod--2', 'hw-pod--3'];
+
+        return view('heroes-wall', compact(
+            'players',
+            'categories',
+            'activeCategory',
+            'evaluatedCount',
+            'academyAvg',
+            'topPlayer',
+            'dimensionAverages',
+            'skillLabels',
+            'top3',
+            'podiumOrder',
+            'medalEmojis',
+            'medalClasses'
+        ));
+    }
+
     public function list()
     {
         $players = Player::orderBy('id', 'desc')->get();
@@ -113,6 +205,54 @@ class PlayerController extends Controller
         }
 
         return redirect()->back()->with('success', 'تم حفظ التقييم بنجاح!');
+    }
+
+    public function renew(Request $request, $id)
+    {
+        $player = Player::findOrFail($id);
+
+        $validated = $request->validate([
+            'subscription_date' => 'required|date',
+            'expiration_date' => 'required|date|after:subscription_date',
+            'renewal_fee' => 'required|numeric|min:0',
+        ]);
+
+        DB::transaction(function () use ($player, $validated) {
+            $previousSubscriptionDate = $player->subscription_date;
+            $previousExpirationDate = $player->expiration_date;
+
+            $player->subscription_date = $validated['subscription_date'];
+            $player->expiration_date = $validated['expiration_date'];
+            $player->fee = (float) $player->fee + (float) $validated['renewal_fee'];
+            $player->save();
+
+            $player->subscriptionHistories()->create([
+                'type' => PlayerSubscriptionHistory::TYPE_RENEWAL,
+                'amount' => $validated['renewal_fee'],
+                'subscription_date' => $validated['subscription_date'],
+                'expiration_date' => $validated['expiration_date'],
+                'previous_subscription_date' => $previousSubscriptionDate,
+                'previous_expiration_date' => $previousExpirationDate,
+            ]);
+        });
+
+        $player->refresh();
+
+        $today = \Carbon\Carbon::now()->startOfDay();
+        $expirationDate = \Carbon\Carbon::parse($player->expiration_date)->startOfDay();
+        $daysRemaining = $today->diffInDays($expirationDate, false);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تجديد الاشتراك بنجاح',
+            'player' => [
+                'id' => $player->id,
+                'subscription_date' => $player->subscription_date,
+                'expiration_date' => $player->expiration_date,
+                'fee' => $player->fee,
+                'days_remaining' => $daysRemaining,
+            ],
+        ]);
     }
 
     public function profile($id)

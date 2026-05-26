@@ -1,12 +1,13 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التقارير والميزانية | The Eagle Academy</title>
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <!-- Chart.js for Professional Statistics -->
+@extends('layouts.admin')
+
+@section('title', 'التقارير والميزانية')
+@section('pageTitle', 'التقارير')
+
+@push('head_scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@endpush
+
+@push('styles')
     <style>
         .filter-section {
             background: var(--glass-bg);
@@ -147,25 +148,9 @@
             }
         }
     </style>
-</head>
-<body class="dashboard-body">
+@endpush
 
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <div class="nav-brand">
-            <img src="{{ asset('logo.jpg') }}" alt="Logo" class="nav-logo" onerror="this.src='https://via.placeholder.com/45?text=Logo';">
-            <h1>The Eagle Academy</h1>
-        </div>
-        <div class="top-actions">
-            <a href="{{ route('players.create') }}" class="btn-top-nav">➕ تسجيل لاعب</a>
-            <a href="{{ route('players.list') }}" class="btn-top-nav secondary">📋 سجل اللاعبين</a>
-            <a href="{{ route('dashboard') }}" class="btn-top-nav secondary">🔙 لوحة التحكم</a>
-            <div class="user-profile">
-                مرحباً بك، <span>الكابتن 🦅</span>
-            </div>
-        </div>
-    </nav>
-
+@section('content')
     <main class="dashboard-wrapper">
         
         <div class="welcome-hero" style="margin-bottom: 30px;">
@@ -318,7 +303,9 @@
         </div>
 
     </main>
+@endsection
 
+@push('scripts')
     <script>
         // Initialize Growth Line Chart
         document.addEventListener('DOMContentLoaded', function() {
@@ -369,5 +356,4 @@
             });
         });
     </script>
-</body>
-</html>
+@endpush

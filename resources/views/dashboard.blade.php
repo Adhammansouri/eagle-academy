@@ -1,36 +1,15 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم | The Eagle Academy</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    <!-- Chart.js for Professional Statistics -->
+@extends('layouts.admin')
+
+@section('title', 'لوحة التحكم')
+@section('pageTitle', 'لوحة التحكم')
+
+@push('head_scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="dashboard-body">
+@endpush
 
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <div class="nav-brand">
-            <img src="{{ asset('logo.jpg') }}" alt="Logo" class="nav-logo" onerror="this.src='https://via.placeholder.com/45?text=Logo';">
-            <h1>The Eagle Academy</h1>
-        </div>
-        <div class="top-actions">
-            <a href="{{ route('players.create') }}" class="btn-top-nav">➕ تسجيل لاعب</a>
-            <a href="{{ route('players.list') }}" class="btn-top-nav secondary">📋 سجل اللاعبين</a>
-            <a href="{{ route('reports.index') }}" class="btn-top-nav" style="background: rgba(241, 196, 15, 0.15); color: #f1c40f; border-color: rgba(241, 196, 15, 0.3);">📊 التقارير</a>
-            <div class="user-profile">
-                مرحباً بك، <span>الكابتن 🦅</span>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Dashboard Content -->
+@section('content')
     <main class="dashboard-wrapper">
-        
-        <!-- Hero Welcome Section -->
+
         <div class="welcome-hero">
             <div class="hero-content">
                 <h2>أهلاً بعودتك يا كابتن! 👑</h2>
@@ -39,7 +18,6 @@
             <div class="hero-decoration"></div>
         </div>
 
-        <!-- Top Stats Cards (4 Columns Now) -->
         <div class="stats-row four-cols">
             <div class="stat-card glass-card">
                 <div class="stat-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;">👥</div>
@@ -48,7 +26,7 @@
                     <h2 id="totalPlayers">{{ $playersCount }}</h2>
                 </div>
             </div>
-            
+
             <div class="stat-card glass-card">
                 <div class="stat-icon" style="background: rgba(52, 152, 219, 0.1); color: #3498db;">📈</div>
                 <div class="stat-info">
@@ -74,26 +52,29 @@
             </div>
         </div>
 
-        <!-- Quick Actions Row -->
         <div class="actions-grid">
             <a href="{{ route('players.create') }}" class="action-card">
                 <span class="action-icon">➕</span>
                 <span class="action-title">تسجيل لاعب جديد</span>
                 <p style="color: var(--text-secondary); font-size: 13px; margin-top: 5px; font-weight: normal;">إضافة اشتراك بضغطة واحدة</p>
             </a>
-            
+
             <a href="{{ route('players.list') }}" class="action-card secondary">
                 <span class="action-icon">📋</span>
                 <span class="action-title">سجل اللاعبين بالكامل</span>
                 <p style="color: var(--text-secondary); font-size: 13px; margin-top: 5px; font-weight: normal;">إدارة وتتبع تواريخ الإنتهاء</p>
             </a>
+
+            <a href="{{ route('heroes.wall') }}" class="action-card" style="background: linear-gradient(135deg, rgba(241, 196, 15, 0.1) 0%, rgba(30, 34, 39, 0.9) 100%);">
+                <span class="action-icon">🏆</span>
+                <span class="action-title">حائط الأبطال</span>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-top: 5px; font-weight: normal;">أفضل اللاعبين أداءً</p>
+            </a>
         </div>
 
         <div class="creative-grid">
-            
-            <!-- Center Size: Charts Visualization -->
+
             <div class="charts-section">
-                <!-- Registration Flow Chart -->
                 <div class="chart-box glass-card">
                     <div class="chart-header">
                         <h3>التوزيع العمري للأكاديمية</h3>
@@ -103,8 +84,7 @@
                         <canvas id="categoryChart"></canvas>
                     </div>
                 </div>
-                
-                <!-- Financials / Source Chart -->
+
                 <div class="chart-box glass-card">
                     <div class="chart-header">
                         <h3>مصادر اشتراكات اللاعبين</h3>
@@ -116,10 +96,9 @@
                 </div>
             </div>
 
-            <!-- Recent Activity Sidebar -->
             <div class="recent-activity glass-card">
                 <h3>⚡ أحدث التسجيلات</h3>
-                
+
                 <div class="activity-list">
                     @forelse($recentPlayers as $player)
                         <div class="activity-item">
@@ -136,16 +115,17 @@
                         </div>
                     @endforelse
                 </div>
-                
+
                 <a href="{{ route('players.list') }}" class="view-all-link">عرض جميع اللاعبين ➔</a>
             </div>
 
-        </div> <!-- End Creative Grid -->
+        </div>
     </main>
+@endsection
 
+@push('scripts')
     <script>
         window.chartData = @json(['categories' => $categories, 'sources' => $sources]);
     </script>
     <script src="{{ asset('js/app.js') }}"></script>
-</body>
-</html>
+@endpush

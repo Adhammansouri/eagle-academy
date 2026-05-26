@@ -26,6 +26,11 @@ class Player extends Model
         'coach_notes',
     ];
 
+    public function subscriptionHistories()
+    {
+        return $this->hasMany(PlayerSubscriptionHistory::class)->latest();
+    }
+
     public function evaluations()
     {
         return $this->hasMany(PlayerEvaluation::class)->orderBy('evaluation_date', 'desc');

@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قائمة اللاعبين | The Eagle Academy</title>
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    
+@extends('layouts.admin')
+
+@section('title', 'قائمة اللاعبين')
+@section('pageTitle', 'سجل اللاعبين')
+
+@push('styles')
     <style>
         .table-wrapper {
             background: var(--bg-card);
@@ -176,6 +174,35 @@
             box-shadow: 0 10px 15px -3px rgba(241, 196, 15, 0.4);
         }
 
+        .btn-renew-icon {
+            background: rgba(46, 204, 113, 0.12);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.35);
+            font-size: 1.1rem;
+        }
+
+        .btn-renew-icon:hover {
+            background: #27ae60;
+            color: #fff;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(46, 204, 113, 0.35);
+        }
+
+        .renew-preview {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .renew-preview strong {
+            color: var(--text-primary);
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -308,7 +335,7 @@
 
         @media (max-width: 768px) {
             .table-wrapper {
-                padding: 15px;
+                padding: 10px;
                 background: transparent;
                 border: none;
                 box-shadow: none;
@@ -325,92 +352,131 @@
                 width: 100%;
             }
 
-            .header-actions h2 { border: none; padding: 0; text-align: center; font-size: 20px;}
+            .header-actions h2 { border: none; padding: 0; text-align: center; font-size: 20px; }
             .btn-secondary { width: 100%; text-align: center; }
 
-            table, thead, tbody, th, td, tr { 
+            /* Reset all table elements to block */
+            .table-wrapper table,
+            .table-wrapper thead,
+            .table-wrapper tbody,
+            .table-wrapper th,
+            .table-wrapper td,
+            .table-wrapper tr { 
                 display: block; 
                 width: 100%;
             }
             
-            thead tr { 
+            .table-wrapper thead tr { 
                 display: none;
             }
             
-            tr { 
+            /* Each row = a card */
+            .table-wrapper tbody tr { 
                 background: var(--bg-card);
                 border: 1px solid var(--border-color); 
                 margin-bottom: 20px; 
                 border-radius: var(--radius); 
                 box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                padding: 15px;
-                position: relative;
-            }
-            
-            td { 
-                border: none;
-                border-bottom: 1px solid rgba(255,255,255,0.05); 
-                position: relative;
-                padding: 12px 10px 12px 40%; 
-                text-align: left;
-                font-size: 15px;
+                padding: 0;
+                overflow: hidden;
             }
 
-            td:last-child {
+            /* All td cells - reset */
+            .table-wrapper td { 
+                border: none;
+                border-bottom: 1px solid rgba(255,255,255,0.06); 
+                position: relative;
+                padding: 14px 15px 14px 15px;
+                text-align: right;
+                font-size: 14px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .table-wrapper td:last-child {
                 border-bottom: none;
             }
-            
-            td:before { 
-                position: absolute;
-                top: 12px;
-                right: 10px;
-                width: auto; 
-                padding-right: 0; 
-                white-space: nowrap;
-                text-align: right;
+
+            /* Remove ALL global td:before labels - we use our own */
+            .table-wrapper td:before { 
+                content: none !important;
+                display: none !important;
+            }
+
+            /* ---- Player Name (1st td) - Card Header ---- */
+            .table-wrapper td:nth-of-type(1) {
+                background: linear-gradient(135deg, rgba(211, 47, 47, 0.1) 0%, rgba(30, 34, 39, 0.9) 100%);
+                padding: 18px 15px;
+                justify-content: center;
+                border-bottom: 2px solid rgba(211, 47, 47, 0.3);
+            }
+            .table-wrapper td:nth-of-type(1) .player-info {
+                justify-content: center;
+                gap: 10px;
+            }
+
+            /* ---- Data rows (2nd to 9th td) - Label : Value ---- */
+            .table-wrapper td:nth-of-type(2):after,
+            .table-wrapper td:nth-of-type(3):after,
+            .table-wrapper td:nth-of-type(4):after,
+            .table-wrapper td:nth-of-type(5):after,
+            .table-wrapper td:nth-of-type(6):after,
+            .table-wrapper td:nth-of-type(7):after,
+            .table-wrapper td:nth-of-type(8):after,
+            .table-wrapper td:nth-of-type(9):after {
                 font-weight: 700;
                 color: var(--text-secondary);
-                font-size: 13px;
+                font-size: 12px;
+                order: 2;
+                flex-shrink: 0;
+                white-space: nowrap;
             }
-            
-            /* Enhanced Mobile Table Labels */
-            td:nth-of-type(1) {
-                background: rgba(255,255,255,0.02);
-                border-radius: var(--radius) var(--radius) 0 0;
-                margin: -15px -15px 10px -15px;
-                padding: 15px;
-                text-align: right;
-            }
-            td:nth-of-type(1):before { content: ""; display: none; } /* Hide label for name row */
 
-            td:nth-of-type(2):before { content: "سنة المواليد:"; display: inline-block; }
-            td:nth-of-type(3):before { content: "تاريخ الاشتراك:"; display: inline-block; }
-            td:nth-of-type(4):before { content: "متبقي للاشتراك:"; display: inline-block; }
-            td:nth-of-type(5):before { content: "القيمة:"; display: inline-block; }
-            td:nth-of-type(6):before { content: "الفئة المحددة:"; display: inline-block; }
-            td:nth-of-type(7):before { content: "الجهة التابع لها:"; display: inline-block; }
-            td:nth-of-type(8):before { content: "الحالة الحالية:"; display: inline-block; }
+            .table-wrapper td:nth-of-type(2):after { content: "الكود"; }
+            .table-wrapper td:nth-of-type(3):after { content: "سنة المواليد"; }
+            .table-wrapper td:nth-of-type(4):after { content: "تاريخ الاشتراك"; }
+            .table-wrapper td:nth-of-type(5):after { content: "المتبقي"; }
+            .table-wrapper td:nth-of-type(6):after { content: "القيمة"; }
+            .table-wrapper td:nth-of-type(7):after { content: "الفئة"; }
+            .table-wrapper td:nth-of-type(8):after { content: "الجهة"; }
+            .table-wrapper td:nth-of-type(9):after { content: "الحالة"; }
+
+            /* Value text sits on the left (start in RTL) */
+            .table-wrapper td:nth-of-type(n+2):nth-of-type(-n+9) {
+                flex-direction: row-reverse;
+            }
+
+            /* ---- Actions (10th td) - Card Footer ---- */
+            .table-wrapper td:nth-of-type(10) {
+                background: rgba(0, 0, 0, 0.15);
+                padding: 12px 15px;
+                justify-content: center;
+                border-bottom: none;
+            }
+            .table-wrapper td:nth-of-type(10) > div {
+                justify-content: center;
+                width: 100%;
+            }
+
+            /* Avatar adjustments */
+            .table-wrapper .avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
+            /* Player info layout in card header */
+            .table-wrapper .player-info {
+                flex-direction: row;
+                align-items: center;
+            }
         }
     </style>
-</head>
-<body class="dashboard-body">
+@endpush
 
-    <!-- Top Navigation -->
-    <nav class="top-nav">
-        <div class="nav-brand">
-            <img src="{{ asset('logo.jpg') }}" alt="Logo" class="nav-logo" onerror="this.src='https://via.placeholder.com/45?text=Logo';">
-            <h1>The Eagle Academy</h1>
-        </div>
-        <div class="top-actions">
-            <a href="{{ route('players.create') }}" class="btn-top-nav">➕ تسجيل لاعب</a>
-            <a href="{{ route('dashboard') }}" class="btn-top-nav secondary">🔙 لوحة التحكم</a>
-            <a href="{{ route('reports.index') }}" class="btn-top-nav" style="background: rgba(241, 196, 15, 0.15); color: #f1c40f; border-color: rgba(241, 196, 15, 0.3);">📊 التقارير</a>
-            <div class="user-profile">
-                مرحباً بك، <span>الكابتن 🦅</span>
-            </div>
-        </div>
-    </nav>
-
+@section('content')
     <main class="dashboard-wrapper">
         <div class="table-wrapper">
             
@@ -507,6 +573,17 @@
                                         </a>
                                     @endif
                                     
+                                    <button type="button"
+                                            class="btn-action-icon btn-renew-icon"
+                                            data-player-id="{{ $player->id }}"
+                                            data-player-name="{{ $player->name }}"
+                                            data-subscription-date="{{ $player->subscription_date }}"
+                                            data-expiration-date="{{ $player->expiration_date }}"
+                                            data-player-fee="{{ (float) $player->fee }}"
+                                            title="تجديد الاشتراك">
+                                        🔄
+                                    </button>
+
                                     <button class="btn-action-icon btn-eval-icon" onclick="openEvalModal({{ $player->id }}, '{{ $player->name }}', {{ $player->tech_score ?? 5 }}, {{ $player->speed_score ?? 5 }}, {{ $player->defense_score ?? 5 }}, {{ $player->fitness_score ?? 5 }}, {{ $player->discipline_score ?? 5 }}, '{{ addslashes($player->coach_notes) }}')" title="تقييم اللاعب">
                                         ⭐
                                     </button>
@@ -525,6 +602,42 @@
 
         </div>
     </main>
+
+    <!-- Renewal Modal -->
+    <div id="renewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🔄 تجديد اشتراك: <span id="renewPlayerName"></span></h3>
+                <span class="close-btn" onclick="closeRenewModal()">&times;</span>
+            </div>
+            <form id="renewForm" onsubmit="event.preventDefault(); submitRenewal();">
+                <div class="modal-body">
+                    <input type="hidden" id="renewPlayerId">
+
+                    <div class="renew-preview" id="renewPreview"></div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="renewSubDate">تاريخ بداية الاشتراك</label>
+                        <input type="date" id="renewSubDate" required style="width: 100%; padding: 10px; border-radius: var(--radius); background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: 'Cairo', sans-serif;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="renewExpDate">تاريخ انتهاء الاشتراك</label>
+                        <input type="date" id="renewExpDate" required style="width: 100%; padding: 10px; border-radius: var(--radius); background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: 'Cairo', sans-serif;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="renewalFee">المبلغ المدفوع (ج.م)</label>
+                        <input type="number" id="renewalFee" min="0" step="0.01" required placeholder="مثال: 500" style="width: 100%; padding: 10px; border-radius: var(--radius); background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: 'Cairo', sans-serif;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeRenewModal()">إلغاء</button>
+                    <button type="submit" class="btn-primary" id="renewSubmitBtn" style="width: auto; padding: 12px 24px;">تأكيد التجديد</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Evaluation Modal -->
     <div id="evalModal" class="modal">
@@ -609,11 +722,163 @@
             </form>
         </div>
     </div>
+@endsection
 
-
-
+@push('scripts')
     <script>
         const modal = document.getElementById('evalModal');
+        const renewModal = document.getElementById('renewModal');
+        const renewUrlTemplate = @json(route('players.renew', ['id' => '__ID__']));
+
+        document.querySelectorAll('.btn-renew-icon').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                openRenewModal(
+                    this.dataset.playerId,
+                    this.dataset.playerName,
+                    this.dataset.subscriptionDate,
+                    this.dataset.expirationDate,
+                    parseFloat(this.dataset.playerFee) || 0
+                );
+            });
+        });
+
+        function parseDateOnly(value) {
+            const [y, m, d] = String(value).split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+
+        function formatDateOnly(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+        function computeRenewalDefaults(subscriptionDate, expirationDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const currentSub = parseDateOnly(subscriptionDate);
+            const currentExp = parseDateOnly(expirationDate);
+
+            const periodDays = Math.max(
+                1,
+                Math.round((currentExp - currentSub) / (1000 * 60 * 60 * 24))
+            );
+
+            let newStart;
+            if (currentExp >= today) {
+                newStart = addDays(currentExp, 1);
+            } else {
+                newStart = new Date(today);
+            }
+
+            const newEnd = addDays(newStart, periodDays);
+
+            return {
+                subscription_date: formatDateOnly(newStart),
+                expiration_date: formatDateOnly(newEnd),
+                periodDays,
+            };
+        }
+
+        function openRenewModal(id, name, subscriptionDate, expirationDate, currentFee) {
+            document.getElementById('renewPlayerId').value = id;
+            document.getElementById('renewPlayerName').textContent = name;
+
+            const defaults = computeRenewalDefaults(subscriptionDate, expirationDate);
+            document.getElementById('renewSubDate').value = defaults.subscription_date;
+            document.getElementById('renewExpDate').value = defaults.expiration_date;
+            document.getElementById('renewalFee').value = '';
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const exp = parseDateOnly(expirationDate);
+            const daysRemaining = Math.round((exp - today) / (1000 * 60 * 60 * 24));
+            let statusText = daysRemaining < 0
+                ? 'منتهي'
+                : (daysRemaining <= 7 ? `قريباً (${daysRemaining} أيام)` : `ساري (${daysRemaining} أيام)`);
+
+            document.getElementById('renewPreview').innerHTML =
+                `<strong>الاشتراك الحالي:</strong> من ${subscriptionDate} إلى ${expirationDate}<br>` +
+                `<strong>الحالة:</strong> ${statusText}<br>` +
+                `<strong>إجمالي المدفوع سابقاً:</strong> ${currentFee} ج.م<br>` +
+                `<strong>مدة التجديد المقترحة:</strong> ${defaults.periodDays} يوم`;
+
+            renewModal.classList.add('show');
+        }
+
+        function closeRenewModal() {
+            renewModal.classList.remove('show');
+        }
+
+        async function submitRenewal() {
+            const id = document.getElementById('renewPlayerId').value;
+            const btn = document.getElementById('renewSubmitBtn');
+            const originalText = btn.innerHTML;
+
+            btn.innerHTML = 'جاري الحفظ...';
+            btn.disabled = true;
+
+            const data = {
+                subscription_date: document.getElementById('renewSubDate').value,
+                expiration_date: document.getElementById('renewExpDate').value,
+                renewal_fee: document.getElementById('renewalFee').value,
+            };
+
+            try {
+                const response = await fetch(renewUrlTemplate.replace('__ID__', id), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    let message = 'حدث خطأ أثناء التجديد.';
+                    try {
+                        const err = await response.json();
+                        if (err.message) message = err.message;
+                        if (err.errors) {
+                            message = Object.values(err.errors).flat().join('\n');
+                        }
+                    } catch (e) {
+                        const errText = await response.text();
+                        if (errText) message = errText.substring(0, 200);
+                    }
+                    alert(message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    btn.innerHTML = 'تم التجديد';
+                    setTimeout(() => location.reload(), 600);
+                } else {
+                    alert(result.message || 'حدث خطأ أثناء التجديد.');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert('خطأ في الاتصال بالسيرفر: ' + error.message);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
 
         function setCheckedRadio(name, value) {
             // Convert old 10-scale to 5-scale if needed
@@ -644,10 +909,13 @@
         }
 
         window.onclick = function(event) {
-            if (event.target == modal) {
+            if (event.target === modal) {
                 closeEvalModal();
             }
-        }
+            if (event.target === renewModal) {
+                closeRenewModal();
+            }
+        };
 
         async function submitEvaluation() {
             const id = document.getElementById('evalPlayerId').value;
@@ -712,5 +980,4 @@
             }
         }
     </script>
-</body>
-</html>
+@endpush
