@@ -128,7 +128,77 @@
     }
 
     .history-pagination {
-        margin-top: 20px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .pagination-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+    }
+
+    .pagination-info {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .custom-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .custom-pagination .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .custom-pagination .page-link:hover:not(.disabled):not(.active) {
+        background: rgba(211, 47, 47, 0.15);
+        border-color: var(--primary-red);
+        color: var(--primary-red);
+        transform: translateY(-1px);
+    }
+
+    .custom-pagination .page-link.active {
+        background: var(--primary-red);
+        border-color: var(--primary-red);
+        color: #fff;
+        cursor: default;
+        box-shadow: 0 0 10px rgba(211, 47, 47, 0.3);
+    }
+
+    .custom-pagination .page-link.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        background: transparent;
+    }
+
+    @media (min-width: 576px) {
+        .pagination-container {
+            flex-direction: row;
+            justify-content: space-between;
+        }
     }
 
     .history-table-wrap table {
@@ -469,7 +539,7 @@
             </table>
 
             <div class="history-pagination">
-                {{ $histories->links() }}
+                {{ $histories->links('partials.pagination') }}
             </div>
         </div>
 
