@@ -24,6 +24,20 @@ Route::get('/portal/check', function () {
     return redirect()->route('portal.index');
 });
 
+// Temporary route to run migrations on Hostinger (Delete or disable this route after use)
+Route::get('/run-migrations', function (\Illuminate\Http\Request $request) {
+    if ($request->query('key') !== 'eagle_migrate_2026') {
+        abort(403, 'Unauthorized');
+    }
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return 'Migrations run successfully:<br><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
+    } catch (\Exception $e) {
+        return 'Error running migrations: ' . $e->getMessage();
+    }
+});
+
+
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [PlayerController::class, 'index'])->name('dashboard');
     Route::get('/players', [PlayerController::class, 'list'])->name('players.list');

@@ -70,4 +70,9 @@ COLUMNS=120 php -d display_errors=1 artisan migrate:status 2>&1
 echo "    (exit $?)"
 echo ""
 
+echo ">>> php artisan migrate --force"
+php -d display_errors=1 artisan migrate --force 2>&1
+echo "    (exit $?)"
+echo ""
+
 echo "Done."
