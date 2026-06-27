@@ -18,7 +18,7 @@
             <div class="hero-decoration"></div>
         </div>
 
-        <div class="stats-row four-cols">
+        <div class="stats-row five-cols">
             <div class="stat-card glass-card">
                 <div class="stat-icon" style="background: rgba(46, 204, 113, 0.1); color: #2ecc71;">👥</div>
                 <div class="stat-info">
