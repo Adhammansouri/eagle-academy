@@ -506,7 +506,8 @@
                             $today = \Carbon\Carbon::now()->startOfDay();
                             $daysRemaining = $today->diffInDays($expirationDate, false); // false keeps it negative if in the past
                             
-                            $whatsappMessage = "مرحباً، نود تذكيركم بأن اشتراك البطل ({$player->name}) في The Eagle Academy سينتهي بتاريخ {$player->expiration_date}. \n\nكود اللاعب للاستعلام من البوابة: {$player->player_code}";
+                            $portalUrl = rtrim(config('app.url'), '/') . '/portal';
+                            $whatsappMessage = "مرحباً، نود تذكيركم بأن اشتراك البطل ({$player->name}) في The Eagle Academy سينتهي بتاريخ {$player->expiration_date}. \n\nكود اللاعب للاستعلام من البوابة: {$player->player_code}\n\nللاستعلام عن حالة اللاعب من البورتال:\n{$portalUrl}";
                             $whatsappMessageEncoded = urlencode($whatsappMessage);
                             
                             $phone = $player->phone_number;
@@ -713,6 +714,14 @@
                     <div class="form-group" style="margin-top: 15px;">
                         <label for="coachNotes">ملاحظات المدرب (اختياري)</label>
                         <textarea id="coachNotes" rows="3" placeholder="أضف نصيحة أو تعليق لولي الأمر..." style="width: 100%; padding: 10px; border-radius: var(--radius); background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: 'Cairo', sans-serif; resize: vertical;"></textarea>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="evalVideos">🎥 فيديو التقييم (اختياري — حد أقصى 3 فيديوهات × 30 ثانية لكل شهر)</label>
+                        <input type="file" id="evalVideos" accept="video/mp4,video/quicktime,video/webm,video/x-msvideo" multiple
+                               style="width: 100%; padding: 10px; border-radius: var(--radius); background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); font-family: 'Cairo', sans-serif;">
+                        <small style="color: var(--text-secondary); display: block; margin-top: 5px;">أنواع مسموحة: MP4, MOV, WebM — حد أقصى 50MB لكل فيديو</small>
+                        <div id="videoValidationError" style="color: #e74c3c; font-size: 13px; margin-top: 5px; display: none;"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -921,36 +930,69 @@
             const id = document.getElementById('evalPlayerId').value;
             const btn = document.getElementById('evalSubmitBtn');
             const originalText = btn.innerHTML;
-            
+
+            // Validate video duration (30s max)
+            const videoInput = document.getElementById('evalVideos');
+            const errorDiv = document.getElementById('videoValidationError');
+            errorDiv.style.display = 'none';
+
+            if (videoInput.files.length > 3) {
+                errorDiv.textContent = 'الحد الأقصى 3 فيديوهات لكل تقييم.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Check video durations client-side
+            if (videoInput.files.length > 0) {
+                for (const file of videoInput.files) {
+                    const duration = await getVideoDuration(file);
+                    if (duration > 30) {
+                        errorDiv.textContent = `الفيديو "${file.name}" مدته ${Math.round(duration)} ثانية — الحد الأقصى 30 ثانية.`;
+                        errorDiv.style.display = 'block';
+                        return;
+                    }
+                }
+            }
+
             btn.innerHTML = 'جاري الحفظ... ⏳';
             btn.disabled = true;
 
-            const data = {
-                _token: '{{ csrf_token() }}',
-                evaluation_date: document.getElementById('evalDate').value,
-                tech_score: document.querySelector('input[name="tech_score"]:checked')?.value || 1,
-                speed_score: document.querySelector('input[name="speed_score"]:checked')?.value || 1,
-                defense_score: document.querySelector('input[name="defense_score"]:checked')?.value || 1,
-                fitness_score: document.querySelector('input[name="fitness_score"]:checked')?.value || 1,
-                discipline_score: document.querySelector('input[name="discipline_score"]:checked')?.value || 1,
-                coach_notes: document.getElementById('coachNotes').value
-            };
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('evaluation_date', document.getElementById('evalDate').value);
+            formData.append('tech_score', document.querySelector('input[name="tech_score"]:checked')?.value || 1);
+            formData.append('speed_score', document.querySelector('input[name="speed_score"]:checked')?.value || 1);
+            formData.append('defense_score', document.querySelector('input[name="defense_score"]:checked')?.value || 1);
+            formData.append('fitness_score', document.querySelector('input[name="fitness_score"]:checked')?.value || 1);
+            formData.append('discipline_score', document.querySelector('input[name="discipline_score"]:checked')?.value || 1);
+            formData.append('coach_notes', document.getElementById('coachNotes').value);
+
+            // Append videos
+            if (videoInput.files.length > 0) {
+                for (const file of videoInput.files) {
+                    formData.append('videos[]', file);
+                }
+            }
 
             try {
                 const response = await fetch(`/players/${id}/evaluate`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify(data)
+                    body: formData
                 });
 
                 if (!response.ok) {
                     const errText = await response.text();
                     console.error("Server Error:", errText);
-                    alert('خطأ من السيرفر: ' + errText.substring(0, 100));
+                    try {
+                        const errJson = JSON.parse(errText);
+                        alert(errJson.message || 'خطأ من السيرفر');
+                    } catch(e) {
+                        alert('خطأ من السيرفر: ' + errText.substring(0, 100));
+                    }
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     return;
@@ -966,9 +1008,10 @@
                         btn.innerHTML = originalText;
                         btn.style.background = '';
                         btn.disabled = false;
+                        location.reload();
                     }, 1500);
                 } else {
-                    alert('حدث خطأ أثناء الحفظ.');
+                    alert(result.message || 'حدث خطأ أثناء الحفظ.');
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 }
@@ -978,6 +1021,21 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
+        }
+
+        function getVideoDuration(file) {
+            return new Promise((resolve) => {
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.onloadedmetadata = function() {
+                    window.URL.revokeObjectURL(video.src);
+                    resolve(video.duration);
+                };
+                video.onerror = function() {
+                    resolve(0);
+                };
+                video.src = URL.createObjectURL(file);
+            });
         }
     </script>
 @endpush

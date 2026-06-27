@@ -384,6 +384,23 @@
                     <div class="info-value">{{ $player->fee }} ج.م</div>
                 </div>
             </div>
+
+            @php
+                $renewalPhone = \App\Support\PhoneHelper::toWhatsApp($player->phone_number ?? '');
+                $renewalMessage = \App\Support\RenewalMessageBuilder::build($player);
+            @endphp
+            @if($renewalPhone)
+                <div style="margin-top: 20px;">
+                    <a href="https://wa.me/{{ $renewalPhone }}?text={{ urlencode($renewalMessage) }}"
+                       target="_blank" rel="noopener noreferrer"
+                       style="display: inline-flex; align-items: center; gap: 10px; background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); padding: 12px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.95rem; transition: all 0.3s;"
+                       onmouseover="this.style.background='#2ecc71'; this.style.color='#fff';"
+                       onmouseout="this.style.background='rgba(46, 204, 113, 0.15)'; this.style.color='#2ecc71';">
+                        <span style="font-size: 1.3rem;">💬</span>
+                        إرسال رسالة تجديد عبر واتساب
+                    </a>
+                </div>
+            @endif
         </div>
 
         <div class="chart-container">
@@ -452,6 +469,29 @@
                         @if($eval->coach_notes)
                             <div class="coach-note">
                                 <strong>ملاحظة الكابتن:</strong> {{ $eval->coach_notes }}
+                            </div>
+                        @endif
+
+                        @if($eval->videos && $eval->videos->count() > 0)
+                            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <strong style="color: var(--primary); font-size: 0.95rem;">🎥 فيديوهات التقييم ({{ $eval->videos->count() }})</strong>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 10px;">
+                                    @foreach($eval->videos as $video)
+                                        <div style="background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden; position: relative;">
+                                            <video controls preload="metadata" style="width: 100%; display: block; border-radius: 10px 10px 0 0;">
+                                                <source src="{{ asset('storage/' . $video->video_path) }}" type="video/mp4">
+                                                المتصفح لا يدعم تشغيل الفيديو.
+                                            </video>
+                                            <div style="padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="color: var(--text-secondary); font-size: 0.8rem;">{{ $video->original_name }}</span>
+                                                <button onclick="deleteVideo({{ $video->id }}, this)"
+                                                        style="background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: 'Cairo', sans-serif;">
+                                                    حذف
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -705,6 +745,25 @@
             weight_class: document.getElementById('tournamentWeightClass').value,
             notes: document.getElementById('tournamentNotes').value
         }, 'tournamentModal');
+    }
+
+    async function deleteVideo(videoId, btn) {
+        if (!confirm('هل تريد حذف هذا الفيديو؟')) return;
+
+        try {
+            const res = await fetch(`/evaluations/videos/${videoId}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+            });
+            const json = await res.json();
+            if (json.success) {
+                btn.closest('[style*="background: rgba(0,0,0,0.3)"]').remove();
+            } else {
+                alert('خطأ: ' + (json.message || 'حدث خطأ'));
+            }
+        } catch (e) {
+            alert('خطأ في الاتصال بالسيرفر');
+        }
     }
 
     // Set default dates to today

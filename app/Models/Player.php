@@ -50,4 +50,14 @@ class Player extends Model
     {
         return $this->hasMany(PlayerTournament::class)->orderBy('tournament_date', 'desc');
     }
+
+    public function evaluationVideos()
+    {
+        return $this->hasMany(EvaluationVideo::class)->latest();
+    }
+
+    public function reminders()
+    {
+        return $this->hasMany(SubscriptionReminder::class);
+    }
 }

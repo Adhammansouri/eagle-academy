@@ -9,7 +9,6 @@
   <body class="login-body">
     <div class="login-container">
       <div class="logo-wrapper">
-        <!-- Instructions: place the logo.jpg image in the same directory -->
         <img
           src="{{ asset('logo.jpg') }}"
           alt="The Eagle Academy Logo"
@@ -18,16 +17,29 @@
         />
       </div>
 
-      <h2 class="login-title">تسجيل دخول الكابتن</h2>
+      <h2 class="login-title">تسجيل دخول الموظفين</h2>
+      <p class="login-subtitle">استخدم <strong>اسم المستخدم</strong> — وليس رقم تليفون اللاعب</p>
 
-      <form action="{{ route('dashboard') }}" method="GET">
+      @if ($errors->any())
+        <div class="login-error" role="alert">
+          @foreach ($errors->all() as $error)
+            <p>{{ $error }}</p>
+          @endforeach
+        </div>
+      @endif
+
+      <form action="{{ route('login') }}" method="POST">
+        @csrf
         <div class="form-group">
           <label for="username">اسم المستخدم</label>
           <input
             type="text"
             id="username"
-            placeholder="أدخل اسم الكابتن"
+            name="username"
+            value="{{ old('username') }}"
+            placeholder="مثال: admin"
             required
+            autofocus
           />
         </div>
 
@@ -36,13 +48,28 @@
           <input
             type="password"
             id="password"
+            name="password"
             placeholder="أدخل كلمة المرور"
             required
           />
         </div>
 
-        <button type="submit" class="btn-primary">دخول إلى النظام 🦅</button>
+        <div class="form-group">
+          <label class="login-remember">
+            <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} />
+            تذكرني
+          </label>
+        </div>
+
+        <button type="submit" class="btn-primary">دخول إلى النظام</button>
       </form>
+
+      <details class="login-credentials-hint">
+        <summary>حسابات الدخول الافتراضية</summary>
+        <ul>
+          <li><strong>الحساب الافتراضي:</strong> admin / admin123</li>
+        </ul>
+      </details>
     </div>
   </body>
 </html>

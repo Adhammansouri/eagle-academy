@@ -43,13 +43,23 @@
                 </div>
             </div>
 
-            <div class="stat-card glass-card warning-glow">
+            <a href="{{ route('reminders.index') }}" class="stat-card glass-card warning-glow stat-card--link">
                 <div class="stat-icon" style="background: rgba(231, 76, 60, 0.1); color: #e74c3c;">⏳</div>
                 <div class="stat-info">
                     <h3>اشتراكات توشك على الانتهاء</h3>
                     <h2 style="color: #e74c3c;">{{ $expiringSoonCount }}</h2>
+                    <p class="stat-card-hint">اضغط لعرض التنبيهات وإرسال واتساب</p>
                 </div>
-            </div>
+            </a>
+
+            <a href="{{ route('players.expired') }}" class="stat-card glass-card stat-card--link" style="border: 1px solid rgba(192, 57, 43, 0.4); box-shadow: 0 0 20px rgba(192, 57, 43, 0.15);">
+                <div class="stat-icon" style="background: rgba(192, 57, 43, 0.15); color: #c0392b;">🚫</div>
+                <div class="stat-info">
+                    <h3>اشتراكات منتهية</h3>
+                    <h2 style="color: #c0392b;">{{ $expiredCount }}</h2>
+                    <p class="stat-card-hint">اضغط لعرض كل المشتركين المنتهيين</p>
+                </div>
+            </a>
         </div>
 
         <div class="actions-grid">

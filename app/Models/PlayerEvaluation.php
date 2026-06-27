@@ -21,4 +21,9 @@ class PlayerEvaluation extends Model
     {
         return $this->belongsTo(Player::class);
     }
+
+    public function videos()
+    {
+        return $this->hasMany(EvaluationVideo::class, 'player_evaluation_id');
+    }
 }

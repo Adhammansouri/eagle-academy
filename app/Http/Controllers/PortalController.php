@@ -21,7 +21,7 @@ class PortalController extends Controller
         $term = $request->input('search_term');
 
         // Search by player_code or phone_number
-        $player = Player::with(['evaluations', 'fights', 'tournaments'])
+        $player = Player::with(['evaluations.videos', 'fights', 'tournaments'])
                         ->where('player_code', $term)
                         ->orWhere('phone_number', $term)
                         ->first();

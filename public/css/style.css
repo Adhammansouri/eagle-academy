@@ -1127,3 +1127,252 @@ body.sidebar-open {
         transition: none;
     }
 }
+
+.login-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: -8px 0 20px;
+}
+
+.login-credentials-hint {
+    margin-top: 24px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.login-credentials-hint summary {
+    cursor: pointer;
+    color: var(--gold);
+    font-weight: 600;
+}
+
+.login-credentials-hint ul {
+    margin: 12px 0 0;
+    padding-right: 20px;
+    line-height: 1.8;
+}
+
+/* Login errors */
+.login-error {
+    background: rgba(231, 76, 60, 0.15);
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    color: #e74c3c;
+    font-size: 14px;
+}
+
+.login-error p {
+    margin: 0;
+}
+
+.login-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+/* Sidebar user & badge */
+.sidebar-user-name {
+    font-weight: 700;
+    color: var(--gold);
+}
+
+.sidebar-user-role {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.sidebar-logout-form {
+    margin-top: 12px;
+}
+
+.sidebar-logout-btn {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.sidebar-logout-btn:hover {
+    background: rgba(212, 175, 55, 0.1);
+}
+
+.sidebar-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-right: auto;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Dashboard stat card link */
+.stat-card--link {
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card--link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(231, 76, 60, 0.2);
+}
+
+.stat-card-hint {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    font-weight: normal;
+}
+
+/* Reminders page */
+.page-header h1 {
+    margin-bottom: 8px;
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.reminders-summary {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.reminders-summary-item {
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 14px;
+}
+
+.reminders-summary-item--pending strong {
+    color: #e74c3c;
+}
+
+.reminders-empty {
+    padding: 32px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.reminders-table {
+    width: 100%;
+}
+
+.reminders-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.reminders-inline-form {
+    display: inline;
+}
+
+.btn-reminder {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.btn-reminder:hover {
+    opacity: 0.9;
+}
+
+.btn-reminder--whatsapp {
+    background: #25d366;
+    color: #fff;
+}
+
+.btn-reminder--sent {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid #2ecc71;
+}
+
+.btn-reminder--dismiss {
+    background: rgba(149, 165, 166, 0.2);
+    color: var(--text-secondary);
+    border: 1px solid rgba(149, 165, 166, 0.5);
+}
+
+.reminder-status {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.reminder-status--pending {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+}
+
+.reminder-status--sent {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.badge-danger {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.badge-warning {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.alert-success {
+    background: rgba(46, 204, 113, 0.15);
+    border: 1px solid rgba(46, 204, 113, 0.4);
+    color: #2ecc71;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}

@@ -410,6 +410,29 @@
                 </div>
             @endif
 
+            {{-- Evaluation Videos for Current Month --}}
+            @if($player->evaluations && $player->evaluations->count() > 0)
+                @php
+                    $latestEval = $player->evaluations->first();
+                @endphp
+                @if($latestEval->videos && $latestEval->videos->count() > 0)
+                    <div class="evaluation-section" style="margin-top: 20px;">
+                        <h4 class="eval-title" style="font-size: 1rem;">🎥 فيديوهات التقييم</h4>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                            @foreach($latestEval->videos as $video)
+                                <div style="background: rgba(0,0,0,0.25); border-radius: 10px; overflow: hidden;">
+                                    <video controls preload="metadata" style="width: 100%; display: block;">
+                                        <source src="{{ asset('storage/' . $video->video_path) }}" type="video/mp4">
+                                        المتصفح لا يدعم تشغيل الفيديو.
+                                    </video>
+                                    <div style="padding: 6px 10px; color: #94a3b8; font-size: 0.75rem;">{{ $video->original_name }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endif
+
             @if($player->evaluations && $player->evaluations->count() > 1)
                 <div class="evaluation-section" style="margin-top: 20px;">
                     <h4 class="eval-title" style="color: #b2bec3; font-size: 1rem;">📅 التقييمات السابقة (سجل التطور)</h4>
@@ -425,6 +448,18 @@
                                     <span>لياقة: {{ $eval->fitness_score }}★</span>
                                     <span>انضباط: {{ $eval->discipline_score }}★</span>
                                 </div>
+                                @if($eval->videos && $eval->videos->count() > 0)
+                                    <div style="margin-top: 8px;">
+                                        @foreach($eval->videos as $video)
+                                            <div style="background: rgba(0,0,0,0.25); border-radius: 8px; overflow: hidden; margin-bottom: 8px;">
+                                                <video controls preload="metadata" style="width: 100%; display: block;">
+                                                    <source src="{{ asset('storage/' . $video->video_path) }}" type="video/mp4">
+                                                </video>
+                                                <div style="padding: 4px 8px; color: #94a3b8; font-size: 0.7rem;">{{ $video->original_name }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     </div>

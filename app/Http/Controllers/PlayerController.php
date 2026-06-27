@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\EvaluationVideo;
 use App\Models\Player;
 use App\Models\PlayerEvaluation;
 use App\Models\PlayerFight;
 use App\Models\PlayerSubscriptionHistory;
 use App\Models\PlayerWeight;
 use App\Models\PlayerTournament;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PlayerController extends Controller
 {
@@ -22,9 +25,12 @@ class PlayerController extends Controller
         $totalRevenue = Player::sum('fee');
 
         // Calculate expiring soon (within 7 days)
-        $sevenDaysFromNow = \Carbon\Carbon::now()->addDays(7)->endOfDay();
-        $today = \Carbon\Carbon::now()->startOfDay();
+        $sevenDaysFromNow = Carbon::now()->addDays(7)->endOfDay();
+        $today = Carbon::now()->startOfDay();
         $expiringSoonCount = Player::whereBetween('expiration_date', [$today, $sevenDaysFromNow])->count();
+
+        // Calculate expired subscriptions
+        $expiredCount = Player::where('expiration_date', '<', $today)->count();
 
         // Get recent activity (last 5 registrations)
         $recentPlayers = Player::orderBy('id', 'desc')->take(5)->get();
@@ -43,7 +49,8 @@ class PlayerController extends Controller
             'playersCount', 
             'newSubsCount', 
             'totalRevenue', 
-            'expiringSoonCount', 
+            'expiringSoonCount',
+            'expiredCount', 
             'recentPlayers', 
             'categories', 
             'sources'
@@ -180,6 +187,16 @@ class PlayerController extends Controller
         return view('players', compact('players'));
     }
 
+    public function expiredSubscriptions()
+    {
+        $today = Carbon::now()->startOfDay();
+        $players = Player::where('expiration_date', '<', $today)
+            ->orderBy('expiration_date', 'asc')
+            ->get();
+
+        return view('subscriptions.expired', compact('players'));
+    }
+
     public function evaluate(Request $request, $id)
     {
         $player = Player::findOrFail($id);
@@ -192,10 +209,46 @@ class PlayerController extends Controller
             'fitness_score' => 'nullable|integer|min:0|max:5',
             'discipline_score' => 'nullable|integer|min:0|max:5',
             'coach_notes' => 'nullable|string|max:1000',
+            'videos' => 'nullable|array|max:3',
+            'videos.*' => 'file|mimetypes:video/mp4,video/quicktime,video/webm,video/x-msvideo|max:51200',
         ]);
 
+        // Check monthly video limit (3 videos per evaluation month)
+        $evalDate = Carbon::parse($validated['evaluation_date']);
+        $monthStart = $evalDate->copy()->startOfMonth();
+        $monthEnd = $evalDate->copy()->endOfMonth();
+
+        $existingVideoCount = EvaluationVideo::where('player_id', $player->id)
+            ->whereHas('evaluation', function ($q) use ($monthStart, $monthEnd) {
+                $q->whereBetween('evaluation_date', [$monthStart, $monthEnd]);
+            })
+            ->count();
+
+        $newVideoCount = $request->hasFile('videos') ? count($request->file('videos')) : 0;
+
+        if ($existingVideoCount + $newVideoCount > 3) {
+            $remaining = max(0, 3 - $existingVideoCount);
+            return response()->json([
+                'success' => false,
+                'message' => "تم تجاوز الحد الأقصى للفيديوهات (3 فيديوهات لكل شهر). المتبقي: {$remaining} فيديو.",
+            ], 422);
+        }
+
         // Insert into player_evaluations
-        $player->evaluations()->create($validated);
+        $evaluation = $player->evaluations()->create($validated);
+
+        // Handle video uploads
+        if ($request->hasFile('videos')) {
+            foreach ($request->file('videos') as $video) {
+                $path = $video->store("evaluation-videos/{$player->id}", 'public');
+                $evaluation->videos()->create([
+                    'player_id' => $player->id,
+                    'video_path' => $path,
+                    'original_name' => $video->getClientOriginalName(),
+                    'file_size' => $video->getSize(),
+                ]);
+            }
+        }
 
         // Also update the main player record with the latest evaluation for quick access/sorting if needed
         $player->update($validated);
@@ -257,8 +310,22 @@ class PlayerController extends Controller
 
     public function profile($id)
     {
-        $player = Player::with(['evaluations', 'fights', 'weights', 'tournaments'])->findOrFail($id);
+        $player = Player::with(['evaluations.videos', 'fights', 'weights', 'tournaments'])->findOrFail($id);
         return view('profile', compact('player'));
+    }
+
+    public function deleteEvaluationVideo($id)
+    {
+        $video = EvaluationVideo::findOrFail($id);
+
+        // Delete the file from storage
+        if (Storage::disk('public')->exists($video->video_path)) {
+            Storage::disk('public')->delete($video->video_path);
+        }
+
+        $video->delete();
+
+        return response()->json(['success' => true, 'message' => 'تم حذف الفيديو بنجاح!']);
     }
 
     public function storeFight(Request $request, $id)
